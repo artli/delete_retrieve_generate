@@ -181,9 +181,9 @@ for epoch in range(start_epoch, config['training']['epochs']):
             decoder_logit.contiguous().view(-1, tgt_vocab_size),
             output_lines_tgt.view(-1)
         )
-        losses.append(loss.data[0])
-        losses_since_last_report.append(loss.data[0])
-        epoch_loss.append(loss.data[0])
+        losses.append(loss.item())
+        losses_since_last_report.append(loss.item())
+        epoch_loss.append(loss.item())
         loss.backward()
         norm = nn.utils.clip_grad_norm_(model.parameters(), config['training']['max_norm'])
 
@@ -234,9 +234,19 @@ for epoch in range(start_epoch, config['training']['epochs']):
         writer.add_scalar('eval/recall', recall, epoch)
         writer.add_scalar('eval/edit_distance', edit_distance, epoch)
         writer.add_scalar('eval/bleu', cur_metric, epoch)
-
     else:
         cur_metric = dev_loss
+
+    if epoch % 20 == 0:
+        inputs, preds, ground_truths, auxs = evaluation.decode_dataset(model, src_test, tgt_test, config)
+        with open(working_dir + '/auxs.%s' % epoch, 'w') as f:
+            f.write('\n'.join(map(' '.join, auxs)) + '\n')
+        with open(working_dir + '/inputs.%s' % epoch, 'w') as f:
+            f.write('\n'.join(map(' '.join, inputs)) + '\n')
+        with open(working_dir + '/preds.%s' % epoch, 'w') as f:
+            f.write('\n'.join(map(' '.join, preds)) + '\n')
+        with open(working_dir + '/golds.%s' % epoch, 'w') as f:
+            f.write('\n'.join(map(' '.join, ground_truths)) + '\n')
 
     model.train()
 

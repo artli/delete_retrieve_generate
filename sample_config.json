@@ -3,8 +3,8 @@
     "optimizer": "sgd",
     "learning_rate": 1.0,
     "max_norm": 3.0,
-    "epochs": 70,
-    "batches_per_report": 1,
+    "epochs": 7000,
+    "batches_per_report": 10,
     "batches_per_sampling": 500,
     "random_seed": 1
   },
