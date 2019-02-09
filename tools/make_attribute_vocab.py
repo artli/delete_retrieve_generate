@@ -6,64 +6,45 @@ one of two corpuses. threshold is r ( # in corpus_a  / # in corpus_b )
 """
 
 import sys
+import itertools
+from collections import Counter
 
-import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
+from ..utils import generate_tokens, read_corpus
 
 
 class SalienceCalculator(object):
-    def __init__(self, pre_corpus, post_corpus):
-        self.vectorizer = CountVectorizer()
+    def __init__(self, flattened_corpuses):
+        self.counters = list(map(Counter, flattened_corpuses))
 
-        pre_count_matrix = self.vectorizer.fit_transform(pre_corpus)
-        self.pre_vocab = self.vectorizer.vocabulary_
-        self.pre_counts = np.sum(pre_count_matrix, axis=0)
-        self.pre_counts = np.squeeze(np.asarray(self.pre_counts))
-
-        post_count_matrix = self.vectorizer.fit_transform(post_corpus)
-        self.post_vocab = self.vectorizer.vocabulary_
-        self.post_counts = np.sum(post_count_matrix, axis=0)
-        self.post_counts = np.squeeze(np.asarray(self.post_counts))
-
-    def salience(self, feature, attribute='pre', lmbda=0.5):
-        assert attribute in ['pre', 'post']
-
-        pre_count = post_count = 0.0
-        if feature in self.pre_vocab:
-            pre_count = self.pre_counts[self.pre_vocab[feature]]
-        if feature in self.post_vocab:
-            post_count = self.post_counts[self.post_vocab[feature]]
-        
-        if attribute == 'pre':
-            return (pre_count + lmbda) / (post_count + lmbda)
-        else:
-            return (post_count + lmbda) / (pre_count + lmbda)
+    def saliences(self, token, lambda_=0.5):
+        counts = [counter[token] for counter in self.counters]
+        count_sum = sum(counts)
+        return [(count + lambda_) / (count_sum - count + lambda_) for count in counts]
 
 
 def main():
-    vocab = set([w.strip() for i, w in enumerate(open(sys.argv[1]))])
-    corpus1 = sys.argv[2]
-    corpus1 = [
-        w if w in vocab else '<unk>'
-        for l in open(corpus1)
-        for w in l.strip().split()
-    ]
+    vocab_file, *corpus_descriptions = sys.argv[1:]
 
-    corpus2 = sys.argv[3]
-    corpus2 = [
-        w if w in vocab else '<unk>'
-        for l in open(corpus2)
-        for w in l.strip().split()
-    ]
+    corpus_files = corpus_descriptions[0::3]
+    attribute_files = corpus_descriptions[1::3]
+    min_saliences = list(map(float, corpus_descriptions[2::3]))
 
-    r = float(sys.argv[4])
+    vocab = set(generate_tokens(vocab_file))
+    flattened_corpuses = [
+        list(itertools.chain.from_iterable(read_corpus(filename, vocab)))
+        for filename in corpus_files]
+    calculator = SalienceCalculator(flattened_corpuses)
 
-    sc = SalienceCalculator(corpus1, corpus2)
+    attribute_lists = [[] for _ in attribute_files]
+    for token in vocab:
+        saliences = calculator.saliences(token)
+        for salience, attribute_list, min_salience in zip(saliences, attribute_lists, min_saliences):
+            if salience > min_salience:
+                attribute_list.append(token)
 
-    for tok in vocab:
-        # print(tok, sc.salience(tok))
-        if max(sc.salience(tok, attribute='pre'), sc.salience(tok, attribute='post')) > r:
-            print(tok)
+    for attribute_list, attribute_file in zip(attribute_lists, attribute_files):
+        with open(attribute_file, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(attribute_list))
 
 
 if __name__ == '__main__':

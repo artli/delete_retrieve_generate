@@ -1,0 +1,40 @@
+{
+    "training": {
+        "optimizer": "sgd",
+        "learning_rate": 1.0,
+        "max_norm": 3.0,
+        "epochs": 7000,
+        "batches_per_report": 10,
+        "batches_per_sampling": 500,
+        "random_seed": 1
+    },
+    "data": {
+        "src_train": "data/train.0",
+        "tgt_train": "data/train.1",
+        "src_dev": "data/dev.0",
+        "tgt_dev": "data/dev.1",
+        "src_test": "data/test.0",
+        "tgt_test": "data/test.1",
+        "src_vocab": "data/vocab.16k",
+        "tgt_vocab": "data/vocab.16k",
+        "share_vocab": true,
+        "src_attributes": "data/attributes.0",
+        "tgt_attributes": "data/attributes.1",
+        "batch_size": 128,
+        "max_len": 20,
+        "working_dir": "run"
+    },
+    "model": {
+        "model_type": "delete_retrieve",
+        "emb_dim": 100,
+        "attention": false,
+        "encoder": "lstm",
+        "src_hidden_dim": 64,
+        "src_layers": 1,
+        "bidirectional": true,
+        "tgt_hidden_dim": 64,
+        "tgt_layers": 1,
+        "decode": "greedy",
+        "dropout": 0.2
+    }
+}
