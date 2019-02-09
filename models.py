@@ -1,16 +1,13 @@
 """Sequence to Sequence models."""
-import glob
-import numpy as np
 import os
+import glob
 
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
-import decoders
-import encoders
-
-from cuda import CUDA
+from . import decoders
+from . import encoders
 
 
 def get_latest_ckpt(ckpt_dir):
@@ -211,6 +208,3 @@ class SeqModel(nn.Module):
         for param in self.parameters():
             n_params += np.prod(param.data.cpu().numpy().shape)
         return n_params
-        
-        
-        

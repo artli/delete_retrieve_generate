@@ -1,12 +1,5 @@
-import math
-import numpy as np
-
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
-
-
-
 
 
 class BilinearAttention(nn.Module):
@@ -67,7 +60,6 @@ class AttentionalLSTM(nn.Module):
         if self.use_attention:
             self.attention_layer = BilinearAttention(hidden_dim)
 
-
     def forward(self, input, hidden, ctx, srcmask, kb=None):
         input = input.transpose(0, 1)
 
@@ -97,8 +89,7 @@ class StackedAttentionLSTM(nn.Module):
     """
     def __init__(self, cell_class=AttentionalLSTM, config=None):
         super(StackedAttentionLSTM, self).__init__()
-        self.options=config['model']
-
+        self.options = config['model']
 
         self.dropout = nn.Dropout(self.options['dropout'])
 
@@ -111,14 +102,12 @@ class StackedAttentionLSTM(nn.Module):
             self.layers.append(layer)
             input_dim = hidden_dim
 
-
     def forward(self, input, hidden, ctx, srcmask, kb=None):
         h_final, c_final = [], []
         for i, layer in enumerate(self.layers):
             output, (h_final_i, c_final_i) = layer(input, hidden, ctx, srcmask, kb)
 
             input = output
-
             if i != len(self.layers):
                 input = self.dropout(input)
 
@@ -129,5 +118,3 @@ class StackedAttentionLSTM(nn.Module):
         c_final = torch.stack(c_final)
 
         return input, (h_final, c_final)
-
-

@@ -1,18 +1,16 @@
-import torch.nn as nn
-import torch.nn.functional as F
-from torch.autograd import Variable
 import torch
+import torch.nn as nn
+from torch.autograd import Variable
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-from cuda import CUDA
+from .cuda import CUDA
+
 
 class LSTMEncoder(nn.Module):
     """ simple wrapper for a bi-lstm """
     def __init__(self, emb_dim, hidden_dim, layers, bidirectional, dropout, pack=True):
         super(LSTMEncoder, self).__init__()
-
         self.num_directions = 2 if bidirectional else 1
-
         self.lstm = nn.LSTM(
             emb_dim,
             hidden_dim // self.num_directions,
@@ -20,7 +18,6 @@ class LSTMEncoder(nn.Module):
             bidirectional=bidirectional,
             batch_first=True,
             dropout=dropout)
-
         self.pack = pack
 
     def init_state(self, input):
@@ -41,7 +38,6 @@ class LSTMEncoder(nn.Module):
         else:
             return h0, c0
 
-
     def forward(self, src_embedding, srclens, srcmask, temp=1):
         h0, c0 = self.init_state(src_embedding)
 
@@ -51,8 +47,6 @@ class LSTMEncoder(nn.Module):
             inputs = src_embedding
 
         outputs, (h_final, c_final) = self.lstm(inputs, (h0, c0))
-
         if self.pack:
             outputs, _ = pad_packed_sequence(outputs, batch_first=True)
-
         return outputs, (h_final, c_final)

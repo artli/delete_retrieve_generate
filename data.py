@@ -1,13 +1,14 @@
 """Data utilities."""
+
 import os
 import random
-import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
+import numpy as np
 import torch
 from torch.autograd import Variable
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
-from cuda import CUDA
+from .cuda import CUDA
 
 
 class CorpusSearcher(object):
@@ -22,12 +23,10 @@ class CorpusSearcher(object):
         # rows = docs, cols = features
         self.key_corpus_matrix = self.vectorizer.transform(key_corpus)
         if make_binary:
-            self.key_corpus_matrix = (self.key_corpus_matrix != 0).astype(int) # make binary
+            self.key_corpus_matrix = (self.key_corpus_matrix != 0).astype(int)  # make binary
 
-        
     def most_similar(self, key_idx, n=10):
         query = self.query_corpus[key_idx]
-
         query_vec = self.vectorizer.transform([query])
 
         scores = np.dot(self.key_corpus_matrix, query_vec.T)
@@ -63,7 +62,7 @@ def build_vocab_maps(vocab_file):
         id_to_tok[i] = vi
 
     # Extra vocab item for empty attribute lines
-    empty_tok_idx =  len(id_to_tok)
+    empty_tok_idx = len(id_to_tok)
     tok_to_id['<empty>'] = empty_tok_idx
     id_to_tok[empty_tok_idx] = '<empty>'
 
@@ -133,6 +132,7 @@ def read_nmt_data(src, config, tgt, attribute_vocab, train_src=None, train_tgt=N
     }
 
     return src, tgt
+
 
 def sample_replace(lines, dist_measurer, sample_rate, corpus_idx):
     """
@@ -273,6 +273,3 @@ def unsort(arr, idx):
     for i, origin in enumerate(idx):
         unsorted_arr[origin] = arr[i]
     return unsorted_arr
-
-
-

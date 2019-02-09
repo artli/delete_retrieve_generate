@@ -1,15 +1,16 @@
 import math
-import numpy as np
 import sys
 from collections import Counter
 
-import torch
-from torch.autograd import Variable
-import torch.nn as nn
 import editdistance
+import numpy as np
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
 
-import data
-from cuda import CUDA
+from . import data
+from .cuda import CUDA
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -31,6 +32,7 @@ def bleu_stats(hypothesis, reference):
         stats.append(max([len(hypothesis) + 1 - n, 0]))
     return stats
 
+
 def bleu(stats):
     """Compute BLEU given n-gram statistics."""
     if len(list(filter(lambda x: x == 0, stats))) > 0:
@@ -41,6 +43,7 @@ def bleu(stats):
     ) / 4.
     return math.exp(min([0, 1 - float(r) / c]) + log_bleu_prec)
 
+
 def get_bleu(hypotheses, reference):
     """Get validation BLEU score for dev set."""
     stats = np.array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
@@ -49,6 +52,7 @@ def get_bleu(hypotheses, reference):
     return 100 * bleu(stats)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 
 def get_edit_distance(hypotheses, reference):
     ed = 0
@@ -94,7 +98,6 @@ def get_precisions_recalls(inputs, preds, ground_truths):
     return precisions, recalls
 
 
-
 def decode_minibatch(max_len, start_id, model, src_input, srclens, srcmask,
         aux_input, auxlens, auxmask):
     """ argmax decoding """
@@ -119,6 +122,7 @@ def decode_minibatch(max_len, start_id, model, src_input, srclens, srcmask,
         tgt_input = torch.cat((tgt_input, next_preds.unsqueeze(1)), dim=1)
 
     return tgt_input
+
 
 def decode_dataset(model, src, tgt, config):
     """Evaluate model."""

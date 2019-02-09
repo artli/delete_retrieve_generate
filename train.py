@@ -1,25 +1,21 @@
-import sys
-
 import json
-import data
-import models
-import utils
-import numpy as np
 import logging
 import argparse
 import os
 import time
-import numpy as np
 import glob
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from tensorboardX import SummaryWriter
 
-import evaluation
-from cuda import CUDA
-
+from . import data
+from . import evaluation
+from . import models
+from . import utils
+from .cuda import CUDA
 
 
 parser = argparse.ArgumentParser()
@@ -107,7 +103,7 @@ model = models.SeqModel(
     config=config
 )
 
-logging.info('MODEL HAS %s params' %  model.count_params())
+logging.info('MODEL HAS %s params' % model.count_params())
 model, start_epoch = models.attempt_load_model(
     model=model,
     checkpoint_dir=working_dir)
